@@ -1,199 +1,231 @@
-import React, { useState } from 'react';
-import { SafeAreaView, View, FlatList, StyleSheet, Text, StatusBar, TouchableOpacity, Alert,TextInput } from 'react-native';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import React, { Fragment, Component, useState } from 'react';
+import * as ImagePicker from 'react-native-image-picker';
 
-const minUpperCase = 1;
-const minNumerics = 1;
-const minLowerCase = 1;
-const minSpecialChars = 1;
-const minLength = 8;
-const maxLength = 12;
-const PASS_REG_EX = new RegExp('^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,12}$');
-const EMAIL_REG_EX = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
+import {
+  SafeAreaView,
+  StyleSheet,
+  ScrollView,
+  View,
+  Text,
+  Pressable,
+  Image,
+  Button,
+  Dimensions,
+  TouchableOpacity,
+  Modal
+} from 'react-native';
 
+import {
+  Header,
+  LearnMoreLinks,
+  Colors,
+  DebugInstructions,
+  ReloadInstructions,
+} from 'react-native/Libraries/NewAppScreen';
+/* toggle includeExtra */
+const includeExtra = true;
+const options = {
+  title: 'Select Avatar',
+  customButtons: [{ name: 'fb', title: 'Choose Photo from Facebook' }],
+  storageOptions: {
+    skipBackup: true,
+    path: 'images',
+  },
+};
+export default function App() {
 
-const App = () => {
-  const [data,setdata] = useState([]);
+  const [response, setResponse] = useState();
+  const [modalVisible, setModalVisible] = useState(false);
 
-  const add_onclick = () =>{
-    var number = data.length+1;
-      setdata(data =>[...data, {
-        id: data.length,
-        title: 'Employee Form '+number,
-      }]);
-  }
-
-  const remove_onclick = () =>{
-  setdata([...data.slice(0,data.length-1), ...data.slice(data.length-1+1)])
-}
-
-
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={{flexDirection:'row',justifyContent:'space-between',paddingHorizontal:20}}>
-      <TouchableOpacity onPress={()=>{remove_onclick()}}><Text> <AntDesign name="minuscircle" size={25} color={"black"} style={{marginLeft:10}}/></Text></TouchableOpacity>
-        <TouchableOpacity onPress={()=>{add_onclick()}}><Text> <AntDesign name="pluscircle" size={25} color={"black"} style={{marginLeft:10}}/></Text></TouchableOpacity>
-       </View>
-     
-      <FlatList
-        data={data}
-        renderItem={ ({ item }) => (
-          <UselessTextInput title={item.title} />
-        )}
-        keyExtractor={item => item.id}
-      />
-    </SafeAreaView>
-  );
-}
-
-const UselessTextInput =  ({ title }) => {
-  const [user, setuser] = React.useState('');
-  const [password, setpassword] = React.useState('');
-  const [email, setemail] = React.useState('');
-
-  const [titleuser, settitleuser] = React.useState('Name');
-  const [titlepassword, settitlepassword] = React.useState('Password');
-  const [titleemail, settitleemail] = React.useState('Email');
-
-
-  const [validuser, setvaliduser] = React.useState(0);
-  const [validpassword, setvalidpassword] = React.useState(0);
-  const [valideemail, setvalidemail] = React.useState(0);
-
-  const [hidepass, sethidepass] = React.useState(true);
-
-
-
-  const check_validation = () =>{
-    console.log(user.length)
-    if(user.length==0){
-      settitleuser('Invalid Name')
-      setvaliduser(2)
+  const onButtonPress = React.useCallback((type, options) => {
+    setModalVisible(false)
+    if (type === 'capture') {
+      ImagePicker.launchCamera(options, setResponse);
+    } else {
+      ImagePicker.launchImageLibrary(options, setResponse);
     }
-    else if( user.length>=5){ 
-      settitleuser('Valid Name')
-      setvaliduser(1)
-     
-    }else{
-      settitleuser('Invalid Name')
-      setvaliduser(2)
-    }
+  }, []);
 
-    if(password.length==0){
-      settitlepassword('Invalid Password')
-      setvalidpassword(2)
-    }
-    else if(PASS_REG_EX.test(password)){ // check valid password true
-      settitlepassword('Valid Password')
-      setvalidpassword(1)
-    }else{
-      settitlepassword('Invalid Password')
-      setvalidpassword(2);
-    }
-
-    if(email.length==0){
-      settitleemail('Invalid Email')
-      setvalidemail(2);
-    }
-    else if(EMAIL_REG_EX.test(email)){ // check valid password true
-      settitleemail('Valid Email')
-      setvalidemail(1);
-    }else{
-      settitleemail('Invalid Email')
-      setvalidemail(2);
-    }
-  } 
-
-
-  return (
-  <View style={styles.item}>
-  <Text style={styles.title}>{title}</Text>
-  <TextInput
-        label="Username"
-        type="outlined"
-        onChangeText={text => setuser(text)}
-        value={user}
-        style={{paddingHorizontal:10,height:40,fontSize:15,borderWidth:0.5,borderColor:'gray',borderRadius:10,flexDirection:'row',marginHorizontal:10}}
-        underlineColorAndroid='#FFfF'
-      />
-       <Text style={validuser==0?styles.input_title:validuser==1?styles.input_title_valid:styles.input_title_invalid}>{titleuser}</Text>
-
-      <TextInput
-        label="Email"
-        type="outlined"
-        onChangeText={text => setemail(text)}
-        value={email}
-        style={{paddingHorizontal:10,height:40,fontSize:15,borderWidth:0.5,borderColor:'gray',borderRadius:10,flexDirection:'row',marginHorizontal:10}}
-      />      
-        <Text style={validpassword==0?styles.input_title:validpassword==1?styles.input_title_valid:styles.input_title_invalid}>{titleemail}</Text>
-      
-      <View style={{height:40,borderWidth:0.5,borderColor:'gray',borderRadius:10,flexDirection:'row',marginHorizontal:10}}>
-      <TextInput
-        label="Password"
-        type="outlined"
-        secureTextEntry={hidepass} 
-        onChangeText={text => setpassword(text)}
-        value={password}
-        style={
-          {
-            paddingHorizontal:10,
-            backgroundColor:'red',
-            flex:1,
-            borderRadius:10,
-            backgroundColor:"white",
-            fontSize:15,
-            alignSelf:'center'
-          }
-        }
-      /><TouchableOpacity style={{justifyContent:'center'}}
-      onPress={()=>{sethidepass(!hidepass)}}><Text style={{alignSelf:'center',textAlign:'center',marginHorizontal:10}}>{hidepass?<AntDesign name="eye" size={25} color={"black"} style={{marginLeft:10}}/>:<AntDesign name="eyeo" size={25} color={"black"} style={{marginLeft:10}}/>}</Text></TouchableOpacity></View>
-        <Text style={valideemail==0?styles.input_title:valideemail==1?styles.input_title_valid:styles.input_title_invalid}>{titlepassword}</Text>
+    return (
+          <View style={styles.body}>
+                    <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
        
-        <TouchableOpacity style={{   
-            backgroundColor:'red',
-            flex:1,
-            borderRadius:10
-            ,paddingHorizontal:20,
-            marginHorizontal:10,
-            height:40,
-            justifyContent:'center',
-            fontSize:15,marginTop:15}} onPress={()=>{check_validation()}}><Text style={{alignSelf:'center',color:'white'}}>Submit</Text></TouchableOpacity>
-       
-        
-</View>
-)
-}
+      >
+        <TouchableOpacity style={styles.centeredView} onPress={() => setModalVisible(false)}>
+          <View style={styles.modalView}>
+            <TouchableOpacity
+              style={[styles.button]}
+              onPress={() =>{onButtonPress('capture', {
+                saveToPhotos: true,
+                mediaType: 'photo',
+                includeBase64: false,
+                includeExtra,
+                })}}
+            >
+              <Text style={styles.textStyle}>Take a photo</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button]}
+              onPress={() => onButtonPress('library',{
+                maxHeight: 200,
+                maxWidth: 200,
+                selectionLimit: 0,
+                mediaType: 'photo',
+                includeBase64: false,
+                includeExtra,
+              
+            })}
+            >
+              <Text style={styles.textStyle}>Choose a picture</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+      <View>
+      <Text style={{fontSize:30,paddingBottom:10,marginHorizontal:20,color:'white'}} >Profile Picture</Text>
+            <Text style={{fontSize:12,paddingBottom:10,marginRight:'30%',marginHorizontal:20,color:'white'}} >Upload your photo so that you can optionally display it to others</Text>
+           
+      </View>
+            <View style={styles.ImageSections}>
+            {response?.assets ?
+              response?.assets.map(({uri}) => (
+                <View key={uri} style={styles.images}>
+                  <Image
+                    resizeMode="cover"
+                    resizeMethod="scale"
+                    style={{alignSelf:'center',marginBottom:50,width: 200, height: 200}}
+                    source={{uri: uri}}
+                  />
+                </View>
+              )): 
+              <View key={0} style={styles.images}>
+              <Image
+                resizeMode="cover"
+                resizeMethod="scale"
+                style={{alignSelf:'center',marginBottom:50,width: 200, height: 200}}
+                source={require('./assets/cam2.png')}
+              />
+              </View>}
+            </View>
+
+            <View style={styles.btnParentSection}>
+            
+            <TouchableOpacity    onPress={() => setModalVisible(true)} style={styles.btnSection2}  >
+                <Text style={styles.btnText}>Add a photo</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => onButtonPress('capture', {
+              saveToPhotos: true,
+              mediaType: 'photo',
+              includeBase64: false,
+              includeExtra,
+              })} style={styles.btnSection}  >
+                <Text style={styles.btnText}>Skip</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+    );
+};
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'white',
+  scrollView: {
+    backgroundColor: Colors.lighter,
+  },
+
+  body: {
+    backgroundColor: Colors.black,
+    justifyContent: 'center',
+    borderColor: 'black',
+    borderWidth: 1,
+    height: Dimensions.get('screen').height - 20,
+    width: Dimensions.get('screen').width,
+    justifyContent:'space-evenly'
+  },
+  ImageSections: {
+    display: 'flex',
+    flexDirection: 'row',
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    justifyContent: 'center'
+  },
+  images: {
+    width: 150,
+    height: 150,
+    borderColor: 'black',
+    borderWidth: 1,
+    marginHorizontal: 3
+  },
+  btnParentSection: {
+    alignItems: 'center',
+    marginTop:10
+  },
+  btnSection: {
+    width: '90%',
+    height: 50,
+    backgroundColor: '#373637',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 3,
+    marginBottom:10
+  },
+  btnSection2: {
+    width: '90%',
+    height: 50,
+    backgroundColor: '#D263EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 3,
+    marginBottom:10
+  },
+  btnText: {
+    textAlign: 'center',
+    color: 'white',
+    fontSize: 14,
+    fontWeight:'bold'
+  },
+  centeredView: {
     flex: 1,
-    marginTop: StatusBar.currentHeight || 0,
+    justifyContent: "flex-end",
+    alignItems: "center",
+    marginTop: 22
   },
-  item: {
-    backgroundColor: 'white',
-    padding: 20,
-    marginVertical: 8,
-
-    borderBottomColor:'gray',
-    borderBottomWidth:1
+  modalView: {
+    paddingBottom:20,
+    padding:5,
+    backgroundColor: "#373637",
+    borderTopRightRadius: 10,
+    borderTopLeftRadius: 10,
+    width:'100%' ,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    borderTopWidth:1,
+    borderColor:'white'
   },
-  title: {
-    fontSize: 14,marginHorizontal:10,marginBottom:10
+  button: {
+    borderRadius: 20,
+    padding: 5,
+  
+    margin:5,
+    backgroundColor: "#373637",
   },
-
-  input_title:{
-    fontSize:12,marginHorizontal:10,marginBottom:15
+ 
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    backgroundColor: "#373637",
+    
   },
-  input_title_invalid:{
-    color:'red',
-    fontSize:12,marginHorizontal:10,marginBottom:15
-  },
-  input_title_valid:{
-    color:'green',
-    fontSize:12,marginHorizontal:10,marginBottom:15
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center"
   }
 });
-
-export default App;
